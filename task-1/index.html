@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Company Leader Board</title>
+  <style>
+    :root{
+      --bg: #f6f8fc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e6edf7;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --shadow2: 0 6px 18px rgba(15, 23, 42, 0.08);
+      --blue: #1d9bf0;
+      --blue2: #0ea5e9;
+      --gold: #fbbf24;
+      --silver: #94a3b8;
+      --bronze: #fb923c;
+      --pill: #eef2ff;
+      --radius: 14px;
+      --radius2: 12px;
+      --font: "Aeonik Pro", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    *{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+    body{
+      margin: 0;
+      font-family: var(--font);
+      color: var(--text);
+      background: #f3f5f7;
+    }
+
+    .container{
+      width: min(1180px, calc(100% - 48px));
+      margin: 26px auto 76px;
+    }
+
+    .breadcrumb{
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .breadcrumb a{ color: inherit; text-decoration: none; }
+    .breadcrumb a:hover{ text-decoration: underline; }
+
+    h1{
+      margin: 0 0 18px;
+      font-size: 44px;
+      letter-spacing: -0.02em;
+    }
+
+    .panel{
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(230, 237, 247, 0.9);
+    }
+
+    .leaderboard-panel{
+      padding: 22px 22px 26px;
+    }
+
+    .panel-header{
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .panel-header h2{
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .panel-header p{
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .filters{
+      display: grid;
+      grid-template-columns: 160px 160px 190px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      margin: 12px 0 18px;
+    }
+
+    .control{
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    select, input[type="search"]{
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      border-radius: 2px;
+      border: 1px solid rgba(15, 23, 42, 0.55);
+      background: #f4f4f4;
+      color: var(--text);
+      outline: none;
+    }
+    select:focus, input[type="search"]:focus{
+      border-color: rgba(29, 155, 240, 0.6);
+      box-shadow: 0 0 0 4px rgba(29, 155, 240, 0.12);
+    }
+
+    .searchWrap{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f4f4f4;
+      border: 1px solid rgba(15, 23, 42, 0.55);
+      border-radius: 2px;
+      padding: 0 10px;
+      height: 38px;
+    }
+
+    .searchWrap input{
+      border: none;
+      padding: 0;
+      height: 100%;
+      border-radius: 0;
+    }
+    .searchWrap:focus-within{
+      border-color: rgba(29, 155, 240, 0.6);
+      box-shadow: 0 0 0 4px rgba(29, 155, 240, 0.12);
+    }
+
+    .icon{
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      color: #475569;
+    }
+
+    .podium{
+      position: relative;
+      height: 260px;
+      margin: 8px 0 22px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      align-items: end;
+    }
+
+    .podiumStage{
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 150px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      align-items: end;
+      pointer-events: none;
+    }
+
+    .stageBlock{
+      border-radius: 12px;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      background: #eef2f7;
+      height: 110px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stageBlock.center{
+      background: linear-gradient(180deg, #fff2b8, #ffe783);
+      height: 140px;
+      border-color: rgba(251, 191, 36, 0.55);
+    }
+
+    .stageNum{
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: 900;
+      font-size: 86px;
+      color: rgba(15, 23, 42, 0.10);
+      letter-spacing: -0.03em;
+    }
+
+    .podiumCard{
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding-bottom: 6px;
+    }
+
+    .podiumAvatarWrap{
+      width: 98px;
+      height: 98px;
+      margin: 0 auto 10px;
+      border-radius: 999px;
+      border: 4px solid #ffffff;
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+      overflow: hidden;
+      background: #ffffff;
+      position: relative;
+    }
+
+    .podiumAvatarWrap.center{
+      width: 118px;
+      height: 118px;
+      border-color: rgba(251, 191, 36, 0.9);
+    }
+
+    .podiumAvatar{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .rankBadge{
+      position: absolute;
+      right: -2px;
+      bottom: -2px;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 14px;
+      color: #0f172a;
+      border: 3px solid rgba(255,255,255,0.95);
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
+    }
+
+    .rankBadge.gold{ background: #fde68a; }
+    .rankBadge.silver{ background: #e2e8f0; }
+    .rankBadge.bronze{ background: #fed7aa; }
+
+    .podium-name{
+      margin: 0;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .podium-role{
+      margin: 4px 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pointsPill{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 2px solid rgba(251, 191, 36, 0.55);
+      font-weight: 800;
+      color: #0b4ea2;
+    }
+
+    .pillStar{
+      width: 18px;
+      height: 18px;
+      color: var(--gold);
+      filter: drop-shadow(0 6px 10px rgba(251, 191, 36, 0.22));
+    }
+
+    .list{
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .row{
+      border-radius: var(--radius2);
+      background: #fff;
+      border: 1px solid rgba(230, 237, 247, 0.95);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+      overflow: hidden;
+    }
+
+    .rowHeader{
+      display: grid;
+      grid-template-columns: 72px 1fr 150px 130px 46px;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 14px;
+      cursor: pointer;
+    }
+
+    .rowHeader:hover{
+      background: rgba(15, 23, 42, 0.02);
+    }
+
+    .num{
+      width: 46px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: #94a3b8;
+    }
+
+    .miniAvatar{
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      background: #ffffff;
+      margin: 0;
+      border: 3px solid rgba(255,255,255,0.95);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+      object-fit: cover;
+      display: block;
+    }
+
+    .nameBlock{
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .nameBlock .name{
+      font-weight: 800;
+      font-size: 16px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nameBlock .pos{
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .icons{
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      align-items: center;
+      color: #0ea5e9;
+    }
+
+    .tiny{
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      opacity: 0.95;
+    }
+
+    .total{
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      font-weight: 900;
+      color: #0284c7;
+    }
+
+    .totalLabel{
+      font-size: 10px;
+      color: #94a3b8;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 2px;
+      text-align: right;
+    }
+
+    .totalWrap{
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      line-height: 1.05;
+    }
+
+    .chev{
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(2, 132, 199, 0.20);
+      display: grid;
+      place-items: center;
+      color: #0284c7;
+      justify-self: end;
+      transition: transform 160ms ease;
+    }
+
+    .row[aria-expanded="true"] .chev{
+      transform: rotate(180deg);
+    }
+
+    .details{
+      border-top: 1px solid rgba(230, 237, 247, 0.95);
+      padding: 14px;
+      background: #fbfdff;
+    }
+
+    .details h3{
+      margin: 0 0 10px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead th{
+      text-align: left;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(230, 237, 247, 0.95);
+    }
+
+    tbody td{
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(230, 237, 247, 0.95);
+      color: #0f172a;
+      vertical-align: top;
+    }
+
+    .tag{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #eef2f7;
+      color: #334155;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      white-space: nowrap;
+    }
+
+    .pts{
+      font-weight: 900;
+      color: #0284c7;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .empty{
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px dashed rgba(148, 163, 184, 0.5);
+      color: var(--muted);
+      background: rgba(255,255,255,0.6);
+      text-align: center;
+    }
+
+    footer{
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 12px 2px;
+    }
+
+    .links{
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .links a{ color: var(--muted); text-decoration: none; }
+    .links a:hover{ color: #0f172a; text-decoration: underline; }
+
+    @media (max-width: 980px){
+      .filters{
+        grid-template-columns: 1fr 1fr;
+      }
+      .rowHeader{
+        grid-template-columns: 56px 1fr 120px 120px 46px;
+      }
+    }
+
+    @media (max-width: 720px){
+      h1{ font-size: 34px; }
+      .podium{ grid-template-columns: 1fr; align-items: stretch; height: auto; }
+      .podiumStage{ display: none; }
+      .rowHeader{
+        grid-template-columns: 56px 1fr 36px;
+        grid-template-areas:
+          "num name chev"
+          "num meta chev";
+      }
+      .num{ width: auto; }
+      .rowHeader > :nth-child(1){ grid-area: num; }
+      .rowHeader > :nth-child(2){ grid-area: name; }
+      .rowHeader > :nth-child(3){ display: none; }
+      .rowHeader > :nth-child(4){ grid-area: meta; align-items: flex-start; }
+      .rowHeader > :nth-child(5){ grid-area: chev; }
+      .total{ justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="#">Home</a>
+      <span>/</span>
+      <a href="#">EDU</a>
+      <span>/</span>
+      <span>Company Leader Board</span>
+    </div>
+
+    <h1 id="pageTitle">Company Leader Board</h1>
+
+    <div class="panel leaderboard-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Leaderboard</h2>
+          <p>Top performers based on contributions and activity</p>
+        </div>
+      </div>
+
+      <div class="filters" role="region" aria-label="Leaderboard filters">
+        <div class="control">
+          <select id="yearSelect" aria-label="Year">
+            <option value="all">All Years</option>
+            <option value="2026">2026</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <select id="quarterSelect" aria-label="Quarter">
+            <option value="all">All Quarters</option>
+            <option value="Q1">Q1</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <select id="categorySelect" aria-label="Category">
+            <option value="all">All Categories</option>
+            <option value="Education">Education</option>
+            <option value="Public Speaking">Public Speaking</option>
+            <option value="Mentoring">Mentoring</option>
+            <option value="Community">Community</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <div class="searchWrap" aria-label="Search">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" />
+              <path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <input id="searchInput" type="search" placeholder="Search employee..." autocomplete="off" />
+          </div>
+        </div>
+      </div>
+
+      <div id="podium" class="podium" aria-label="Top 3"></div>
+
+      <div id="list" class="list" aria-label="Leaderboard list"></div>
+
+      <div id="empty" class="empty" style="display:none;">No employees match the current filters.</div>
+    </div>
+
+    <footer>
+      <div>vention</div>
+      <div class="links">
+        <a href="#">LinkedIn</a>
+        <a href="#">Instagram</a>
+        <a href="#">Twitter</a>
+        <a href="#">Youtube</a>
+        <a href="#">Facebook</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const AVATAR_URL = 'https://www.w3schools.com/howto/img_avatar.png';
+
+    const state = {
+      year: 'all',
+      quarter: 'all',
+      category: 'all',
+      search: '',
+      expandedEmployeeId: null,
+    };
+
+    const employees = [
+      {
+        id: 'e1',
+        name: 'Amelia Brooks',
+        positionTitle: 'Frontend Engineer',
+        badges: { education: 7, speaking: 2 },
+        activities: [
+          { title: '[LAB] Lecture "JS Workshop #1: JS variables"', category: 'Education', date: '16-Jan-2026', points: 64, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Lecture "JS Workshop #2: Conditional statements and loops"', category: 'Education', date: '22-Jan-2026', points: 48, year: 2026, quarter: 'Q1' },
+          { title: '[REG] Talk: Quality Gates: Stop, Test, Go!', category: 'Public Speaking', date: '05-Feb-2026', points: 28, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Mentoring of Lubica Kormanova', category: 'Mentoring', date: '19-Feb-2026', points: 52, year: 2026, quarter: 'Q1' },
+        ],
+      },
+      {
+        id: 'e2',
+        name: 'Noah Carter',
+        positionTitle: 'Tech Lead',
+        badges: { education: 10, speaking: 1 },
+        activities: [
+          { title: '[LAB] Lecture "JS Workshop #3: Functions"', category: 'Education', date: '10-Jan-2026', points: 72, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Lecture "JS Workshop #4: Promises"', category: 'Education', date: '17-Jan-2026', points: 68, year: 2026, quarter: 'Q1' },
+          { title: '[REG] Offline Meetup for Employees', category: 'Community', date: '01-Feb-2026', points: 44, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Mentoring of Pavel Shmelev', category: 'Mentoring', date: '20-Feb-2026', points: 60, year: 2026, quarter: 'Q1' },
+          { title: '[REG] Conference speech: Building resilient UI systems', category: 'Public Speaking', date: '12-Mar-2026', points: 84, year: 2026, quarter: 'Q1' },
+        ],
+      },
+      {
+        id: 'e3',
+        name: 'Sophia Nguyen',
+        positionTitle: 'QA Engineer',
+        badges: { education: 7, speaking: 1 },
+        activities: [
+          { title: '[LAB] Lecture "JS Workshop #2: Conditional statements and loops"', category: 'Education', date: '08-Jan-2026', points: 60, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Lecture "JS Workshop #3: Functions"', category: 'Education', date: '15-Jan-2026', points: 54, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Mentoring of Vitalii Lisovyi', category: 'Mentoring', date: '16-Feb-2026', points: 52, year: 2026, quarter: 'Q1' },
+          { title: '[REG] Talk: Frontend performance deep dive', category: 'Public Speaking', date: '27-Feb-2026', points: 46, year: 2026, quarter: 'Q1' },
+        ],
+      },
+      {
+        id: 'e4',
+        name: 'Ethan Parker',
+        positionTitle: 'Backend Engineer',
+        badges: { education: 3, speaking: 0 },
+        activities: [
+          { title: '[LAB] Lecture "JS Workshop #1: JS variables"', category: 'Education', date: '06-Jan-2026', points: 40, year: 2026, quarter: 'Q1' },
+          { title: '[REG] Meetup: Testing culture', category: 'Community', date: '21-Feb-2026', points: 22, year: 2026, quarter: 'Q1' },
+        ],
+      },
+      {
+        id: 'e5',
+        name: 'Mia Patel',
+        positionTitle: 'Product Designer',
+        badges: { education: 2, speaking: 0 },
+        activities: [
+          { title: '[LAB] Mentoring of Intern Cohort', category: 'Mentoring', date: '11-Jan-2026', points: 38, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Lecture "JS Workshop #4: Promises"', category: 'Education', date: '23-Jan-2026', points: 36, year: 2026, quarter: 'Q1' },
+        ],
+      },
+      {
+        id: 'e6',
+        name: 'Liam Rivera',
+        positionTitle: 'DevOps Engineer',
+        badges: { education: 1, speaking: 0 },
+        activities: [
+          { title: '[REG] Volunteer: Community mentoring day', category: 'Community', date: '03-Feb-2026', points: 24, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Lecture "JS Workshop #3: Functions"', category: 'Education', date: '24-Feb-2026', points: 28, year: 2026, quarter: 'Q1' },
+        ],
+      },
+      {
+        id: 'e7',
+        name: 'Olivia Kim',
+        positionTitle: 'Data Analyst',
+        badges: { education: 1, speaking: 0 },
+        activities: [
+          { title: '[LAB] Mentoring of Junior Engineer', category: 'Mentoring', date: '19-Jan-2026', points: 26, year: 2026, quarter: 'Q1' },
+          { title: '[REG] Team knowledge share', category: 'Public Speaking', date: '21-Jan-2026', points: 18, year: 2026, quarter: 'Q1' },
+        ],
+      },
+      {
+        id: 'e8',
+        name: 'Benjamin Stone',
+        positionTitle: 'Mobile Engineer',
+        badges: { education: 0, speaking: 0 },
+        activities: [
+          { title: '[REG] Internal demo day', category: 'Community', date: '14-Jan-2026', points: 16, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Lecture "JS Workshop #2: Conditional statements and loops"', category: 'Education', date: '01-Mar-2026', points: 22, year: 2026, quarter: 'Q1' },
+        ],
+      },
+      {
+        id: 'e9',
+        name: 'Charlotte Evans',
+        positionTitle: 'Project Manager',
+        badges: { education: 0, speaking: 0 },
+        activities: [
+          { title: '[REG] Talk: Storytelling for engineers', category: 'Public Speaking', date: '09-Feb-2026', points: 20, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Mentoring of Student group', category: 'Mentoring', date: '26-Feb-2026', points: 18, year: 2026, quarter: 'Q1' },
+        ],
+      },
+      {
+        id: 'e10',
+        name: 'Jack Wilson',
+        positionTitle: 'Software Engineer',
+        badges: { education: 0, speaking: 0 },
+        activities: [
+          { title: '[REG] Volunteer: Community workshop', category: 'Community', date: '22-Jan-2026', points: 14, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Lecture "JS Workshop #1: JS variables"', category: 'Education', date: '05-Feb-2026', points: 14, year: 2026, quarter: 'Q1' },
+        ],
+      },
+      {
+        id: 'e11',
+        name: 'Ava Thompson',
+        positionTitle: 'HR Specialist',
+        badges: { education: 0, speaking: 0 },
+        activities: [
+          { title: '[REG] Meetup: Career growth', category: 'Public Speaking', date: '13-Jan-2026', points: 12, year: 2026, quarter: 'Q1' },
+          { title: '[LAB] Mentoring of New Hire', category: 'Mentoring', date: '18-Feb-2026', points: 10, year: 2026, quarter: 'Q1' },
+        ],
+      },
+      {
+        id: 'e12',
+        name: 'Lucas Martin',
+        positionTitle: 'Support Engineer',
+        badges: { education: 0, speaking: 0 },
+        activities: [
+          { title: '[REG] Internal talk: UX basics', category: 'Public Speaking', date: '07-Feb-2026', points: 10, year: 2026, quarter: 'Q1' },
+          { title: '[REG] Community day', category: 'Community', date: '20-Feb-2026', points: 8, year: 2026, quarter: 'Q1' },
+        ],
+      },
+    ];
+
+    function calcEmployeePoints(emp, filters){
+      const acts = filterActivities(emp.activities, filters);
+      return acts.reduce((sum, a) => sum + a.points, 0);
+    }
+
+    function filterActivities(activities, filters){
+      return activities.filter(a => {
+        if (filters.year !== 'all' && String(a.year) !== String(filters.year)) return false;
+        if (filters.quarter !== 'all' && a.quarter !== filters.quarter) return false;
+        if (filters.category !== 'all' && a.category !== filters.category) return false;
+        return true;
+      });
+    }
+
+    function getFilteredEmployees(){
+      const q = state.search.trim().toLowerCase();
+      const list = employees
+        .map(e => {
+          const points = calcEmployeePoints(e, state);
+          return { ...e, points };
+        })
+        .filter(e => {
+          if (q && !e.name.toLowerCase().includes(q)) return false;
+          return e.points > 0;
+        })
+        .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+
+      return list;
+    }
+
+    function svgStar(className){
+      return `\n        <svg class="${className}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">\n          <path d="M12 2.4 14.9 8.5l6.7.9-4.9 4.7 1.2 6.7L12 18.3 6.1 20.8l1.2-6.7-4.9-4.7 6.7-.9L12 2.4Z"/>\n        </svg>\n      `;
+    }
+
+    function svgCap(){
+      return `\n        <svg class="tiny" viewBox="0 0 24 24" fill="none" aria-hidden="true">\n          <path d="M12 3 2 8l10 5 10-5-10-5Z" stroke="currentColor" stroke-width="2"/>\n          <path d="M6 10v6c0 2.2 2.7 4 6 4s6-1.8 6-4v-6" stroke="currentColor" stroke-width="2"/>\n        </svg>\n      `;
+    }
+
+    function svgMonitor(){
+      return `\n        <svg class="tiny" viewBox="0 0 24 24" fill="none" aria-hidden="true">\n          <rect x="3" y="4" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/>\n          <path d="M8 20h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>\n          <path d="M12 16v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>\n        </svg>\n      `;
+    }
+
+    function svgSmile(){
+      return `\n        <svg class="tiny" viewBox="0 0 24 24" fill="none" aria-hidden="true">\n          <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" stroke="currentColor" stroke-width="2"/>\n          <path d="M8.5 14.2c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>\n          <path d="M9 10h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>\n          <path d="M15 10h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>\n        </svg>\n      `;
+    }
+
+    function render(){
+      const listEl = document.getElementById('list');
+      const podiumEl = document.getElementById('podium');
+      const emptyEl = document.getElementById('empty');
+
+      const filtered = getFilteredEmployees();
+
+      if (state.expandedEmployeeId && !filtered.some(e => e.id === state.expandedEmployeeId)){
+        state.expandedEmployeeId = null;
+      }
+
+      emptyEl.style.display = filtered.length ? 'none' : 'block';
+
+      renderPodium(podiumEl, filtered.slice(0, 3));
+      renderList(listEl, filtered);
+    }
+
+    function renderPodium(el, top3){
+      if (top3.length === 0){
+        el.innerHTML = '';
+        return;
+      }
+
+      const left = top3[1] ?? null;
+      const center = top3[0] ?? null;
+      const right = top3[2] ?? null;
+
+      el.innerHTML = `
+        <div class="podiumCard">
+          ${left ? `
+            <div class="podiumAvatarWrap">
+              <img class="podiumAvatar" src="${AVATAR_URL}" alt="${escapeHtml(left.name)}" />
+              <div class="rankBadge silver">2</div>
+            </div>
+            <p class="podium-name">${escapeHtml(left.name)}</p>
+            <p class="podium-role">${escapeHtml(left.positionTitle)}</p>
+            <div class="pointsPill" aria-label="Points">${svgStar('pillStar')}<span>${formatNumber(left.points)}</span></div>
+          ` : ''}
+        </div>
+
+        <div class="podiumCard">
+          ${center ? `
+            <div class="podiumAvatarWrap center">
+              <img class="podiumAvatar" src="${AVATAR_URL}" alt="${escapeHtml(center.name)}" />
+              <div class="rankBadge gold">1</div>
+            </div>
+            <p class="podium-name" style="font-size:20px;">${escapeHtml(center.name)}</p>
+            <p class="podium-role">${escapeHtml(center.positionTitle)}</p>
+            <div class="pointsPill" aria-label="Points">${svgStar('pillStar')}<span>${formatNumber(center.points)}</span></div>
+          ` : ''}
+        </div>
+
+        <div class="podiumCard">
+          ${right ? `
+            <div class="podiumAvatarWrap">
+              <img class="podiumAvatar" src="${AVATAR_URL}" alt="${escapeHtml(right.name)}" />
+              <div class="rankBadge bronze">3</div>
+            </div>
+            <p class="podium-name">${escapeHtml(right.name)}</p>
+            <p class="podium-role">${escapeHtml(right.positionTitle)}</p>
+            <div class="pointsPill" aria-label="Points">${svgStar('pillStar')}<span>${formatNumber(right.points)}</span></div>
+          ` : ''}
+        </div>
+
+        <div class="podiumStage" aria-hidden="true">
+          <div class="stageBlock"><div class="stageNum">2</div></div>
+          <div class="stageBlock center"><div class="stageNum">1</div></div>
+          <div class="stageBlock"><div class="stageNum">3</div></div>
+        </div>
+      `;
+    }
+
+    function renderList(el, emps){
+      el.innerHTML = emps.map((emp, index) => {
+        const rank = index + 1;
+        const expanded = state.expandedEmployeeId === emp.id;
+        const educationCount = emp.badges?.education ?? 0;
+        const speakingCount = emp.badges?.speaking ?? 0;
+
+        const stats = [];
+        if (speakingCount > 0) stats.push({ icon: svgMonitor(), count: speakingCount });
+        if (educationCount > 0) stats.push({ icon: svgCap(), count: educationCount });
+        if (stats.length === 0) stats.push({ icon: svgSmile(), count: 1 });
+
+        const detailsHtml = expanded ? renderDetails(emp) : '';
+
+        return `
+          <div class="row" data-emp-id="${emp.id}" aria-expanded="${expanded ? 'true' : 'false'}">
+            <div class="rowHeader" role="button" tabindex="0" aria-label="${escapeHtml(emp.name)} details">
+              <div class="num">${rank}</div>
+              <div style="display:flex; gap:12px; align-items:center; min-width:0;">
+                <img class="miniAvatar" src="${AVATAR_URL}" alt="" aria-hidden="true" />
+                <div class="nameBlock">
+                  <div class="name">${escapeHtml(emp.name)}</div>
+                  <div class="pos">${escapeHtml(emp.positionTitle)}</div>
+                </div>
+              </div>
+              <div class="icons" aria-label="Badges">
+                ${stats.map(s => `<span style="display:flex; align-items:center; gap:6px; color:#0ea5e9; font-weight:800;">${s.icon}<span style="color:#0f172a; font-size:12px; font-weight:800;">${formatNumber(s.count)}</span></span>`).join('')}
+              </div>
+              <div class="totalWrap" aria-label="Total points">
+                <div class="totalLabel">TOTAL</div>
+                <div class="total">${svgStar('tiny')}<span>${formatNumber(emp.points)}</span></div>
+              </div>
+              <div class="chev" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+            ${detailsHtml}
+          </div>
+        `;
+      }).join('');
+
+      el.querySelectorAll('.rowHeader').forEach(header => {
+        header.addEventListener('click', onRowToggle);
+        header.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' '){
+            e.preventDefault();
+            onRowToggle(e);
+          }
+        });
+      });
+    }
+
+    function renderDetails(emp){
+      const activities = filterActivities(emp.activities, state).slice().sort((a, b) => compareDate(b.date, a.date));
+
+      const rows = activities.map(a => {
+        return `
+          <tr>
+            <td>${escapeHtml(a.title)}</td>
+            <td><span class="tag">${escapeHtml(a.category)}</span></td>
+            <td>${escapeHtml(a.date)}</td>
+            <td class="pts">+${formatNumber(a.points)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      return `
+        <div class="details">
+          <h3>Recent Activity</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Activity</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th style="text-align:right;">Points</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows || `<tr><td colspan="4" style="color: var(--muted); padding: 14px 10px;">No activity for current filters.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function onRowToggle(e){
+      const header = e.currentTarget;
+      const row = header.closest('.row');
+      const id = row?.getAttribute('data-emp-id');
+      if (!id) return;
+
+      state.expandedEmployeeId = (state.expandedEmployeeId === id) ? null : id;
+      render();
+
+      if (state.expandedEmployeeId){
+        const rowEl = document.querySelector(`.row[data-emp-id="${CSS.escape(state.expandedEmployeeId)}"]`);
+        rowEl?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+
+    function compareDate(a, b){
+      return parseDate(a) - parseDate(b);
+    }
+
+    function parseDate(s){
+      const m = /^([0-9]{2})-([A-Za-z]{3})-([0-9]{4})$/.exec(s.trim());
+      if (!m) return 0;
+      const day = Number(m[1]);
+      const mon = m[2].toLowerCase();
+      const year = Number(m[3]);
+      const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+      return new Date(year, months[mon] ?? 0, day).getTime();
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function formatNumber(n){
+      return new Intl.NumberFormat(undefined).format(n || 0);
+    }
+
+    function attachControls(){
+      const yearSelect = document.getElementById('yearSelect');
+      const quarterSelect = document.getElementById('quarterSelect');
+      const categorySelect = document.getElementById('categorySelect');
+      const searchInput = document.getElementById('searchInput');
+
+      yearSelect.addEventListener('change', () => {
+        state.year = yearSelect.value;
+        state.expandedEmployeeId = null;
+        render();
+      });
+
+      quarterSelect.addEventListener('change', () => {
+        state.quarter = quarterSelect.value;
+        state.expandedEmployeeId = null;
+        render();
+      });
+
+      categorySelect.addEventListener('change', () => {
+        state.category = categorySelect.value;
+        state.expandedEmployeeId = null;
+        render();
+      });
+
+      searchInput.addEventListener('input', () => {
+        state.search = searchInput.value;
+        state.expandedEmployeeId = null;
+        render();
+      });
+    }
+
+    attachControls();
+    render();
+  </script>
+</body>
+</html>
