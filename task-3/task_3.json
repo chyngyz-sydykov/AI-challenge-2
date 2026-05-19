@@ -1,0 +1,606 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b3be7a8f-2c39-449a-bba1-698e43405815",
+      "name": "Telegram Trigger",
+      "webhookId": "525763c2-c2ba-4649-b33b-d472b79b9e9f",
+      "credentials": {
+        "telegramApi": {
+          "id": "lwlyonsePK0nDexG",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bc3cda06-cc90-43a7-bf38-7af259918b81"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "id": "4b2e3d5e-8b9c-4e8a-9c1f-2d5e8f9a7b6c",
+              "name": "Start Command"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/learn",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "e3f4g5h6-9c8d-4e8a-9c1f-2d5e8f9a7b6c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "id": "f5g6h7i8-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+              "name": "Learn Command"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/quiz",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "g6h7i8j9-9c8d-4e8a-9c1f-2d5e8f9a7b6c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "id": "h7i8j9k0-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+              "name": "Quiz Command"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "quiz_",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "i8j9k0l1-9c8d-4e8a-9c1f-2d5e8f9a7b6c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "id": "j9k0l1m2-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+              "name": "Quiz Callback"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "answer_",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "k0l1m2n3-9c8d-4e8a-9c1f-2d5e8f9a7b6c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "id": "l1m2n3o4-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+              "name": "Answer Callback"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "m2n3o4p5-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Command Router"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/{bot_token}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"chat_id\": \"{{ $json.message.chat.id }}\",\n  \"text\": \"Welcome!\\n\\nSend me a learning article using:\\n\\n/learn https://example.com/article\\n\\nLater, use /quiz to test yourself.\",\n  \"parse_mode\": \"Markdown\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        480,
+        0
+      ],
+      "id": "n3o4p5q6-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Send Welcome"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract URL from /learn command\nconst message = $input.first().json.message.text;\nconst url = message.replace('/learn', '').trim();\n\nif (!url) {\n  return [{\n    json: {\n      error: 'Please provide a URL after /learn command',\n      chatId: $input.first().json.message.chat.id\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    url: url,\n    chatId: $input.first().json.message.chat.id,\n    userId: $input.first().json.message.from.id\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        200
+      ],
+      "id": "o4p5q6r7-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Extract URL"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        720,
+        200
+      ],
+      "id": "p5q6r7s8-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Fetch Article"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clean HTML content\nlet content = $input.first().json;\n\nif (content.data) {\n  // Remove HTML tags\n  let text = content.data.replace(/<[^>]*>/g, ' ');\n  \n  // Remove extra whitespace\n  text = text.replace(/\\s+/g, ' ').trim();\n  \n  // Truncate to 5000 characters\n  text = text.substring(0, 5000);\n  \n  return [{\n    json: {\n      url: $input.first().json.url,\n      chatId: $input.first().json.chatId,\n      userId: $input.first().json.userId,\n      content: text\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    error: 'Could not fetch article content',\n    chatId: $input.first().json.chatId\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        200
+      ],
+      "id": "q6r7s8t9-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Clean Content"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0.3
+        },
+        "prompt": "You are an AI Teacher. Analyze the following content and generate a structured learning summary.\n\nContent: {{ $json.content }}\n\nReturn JSON in this exact format:\n{\n  \"title\": \"Brief title of the content\",\n  \"difficulty\": \"beginner|intermediate|advanced\",\n  \"summary\": [\"Key point 1\", \"Key point 2\", \"Key point 3\"],\n  \"concepts\": [\"concept1\", \"concept2\", \"concept3\"]\n}\n\nOnly return the JSON, no explanations."
+      },
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        200
+      ],
+      "id": "r7s8t9u0-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "AI Teacher",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "learning_materials",
+        "fields": {
+          "userId": "={{ $json.userId }}",
+          "url": "={{ $json.url }}",
+          "title": "={{ $json.title }}",
+          "difficulty": "={{ $json.difficulty }}",
+          "summary": "={{ JSON.stringify($json.summary) }}",
+          "content": "={{ $json.content }}"
+        }
+      },
+      "type": "n8n-nodes-base.n8nDb",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        200
+      ],
+      "id": "s8t9u0v1-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Save Material"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/{bot_token}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"chat_id\": \"{{ $json.chatId }}\",\n  \"text\": \"*{{ $json.title }}*\\n\\nDifficulty: {{ $json.difficulty }}\\n\\n{{ $json.summary.map(point => '• ' + point).join('\\n') }}\\n\\nUse /quiz when you want to test yourself.\",\n  \"parse_mode\": \"Markdown\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1680,
+        200
+      ],
+      "id": "t9u0v1w2-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Send Summary"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "learning_materials",
+        "conditions": {
+          "userId": "={{ $json.message.from.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.n8nDb",
+      "typeVersion": 1,
+      "position": [
+        480,
+        400
+      ],
+      "id": "u0v1w2x3-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Load Materials"
+    },
+    {
+      "parameters": {
+        "jsCode": "const materials = $input.first().json;\n\nif (!materials || materials.length === 0) {\n  return [{\n    json: {\n      message: 'You do not have saved materials yet.\\n\\nSend one first:\\n\\n/learn https://example.com/article',\n      chatId: $input.first().json.chatId\n    }\n  }];\n}\n\n// Create inline keyboard for material selection\nconst keyboard = materials.map((material, index) => [{\n  text: material.title,\n  callback_data: `quiz_${index}`\n}]);\n\nreturn [{\n  json: {\n    chatId: $input.first().json.chatId,\n    userId: $input.first().json.userId,\n    materials: materials,\n    keyboard: keyboard\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        400
+      ],
+      "id": "v1w2x3y4-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Format Material List"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/{bot_token}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"chat_id\": \"{{ $json.chatId }}\",\n  \"text\": \"Choose a topic:\",\n  \"reply_markup\": {\n    \"inline_keyboard\": {{ JSON.stringify($json.keyboard) }}\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        960,
+        400
+      ],
+      "id": "w2x3y4z5-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Send Material List"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse quiz callback and load material\nconst callbackData = $input.first().json.callback_query.data;\nconst materialIndex = parseInt(callbackData.replace('quiz_', ''));\n\n// Get user's materials (you would need to load this from database)\nconst materials = []; // Load from n8n DB\n\nif (materialIndex >= materials.length) {\n  return [{\n    json: {\n      error: 'Material not found',\n      chatId: $input.first().json.callback_query.message.chat.id\n    }\n  }];\n}\n\nconst material = materials[materialIndex];\n\nreturn [{\n  json: {\n    material: material,\n    materialIndex: materialIndex,\n    chatId: $input.first().json.callback_query.message.chat.id,\n    userId: $input.first().json.callback_query.from.id\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        600
+      ],
+      "id": "x3y4z5a6-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Load Selected Material"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0.3
+        },
+        "prompt": "You are an AI Examiner. Generate 5 multiple-choice questions based on this learning material.\n\nTitle: {{ $json.material.title }}\nSummary: {{ $json.material.summary.join('\\n') }}\nContent: {{ $json.material.content }}\n\nReturn JSON in this exact format:\n{\n  \"questions\": [\n    {\n      \"question\": \"Question text here\",\n      \"options\": {\n        \"A\": \"Option A\",\n        \"B\": \"Option B\",\n        \"C\": \"Option C\",\n        \"D\": \"Option D\"\n      },\n      \"correctAnswer\": \"B\",\n      \"explanation\": \"Explanation for why B is correct\"\n    }\n  ]\n}\n\nOnly return the JSON, no explanations."
+      },
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        600
+      ],
+      "id": "y4z5a6b7-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "AI Examiner",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "quiz_sessions",
+        "fields": {
+          "userId": "={{ $json.userId }}",
+          "materialIndex": "={{ $json.materialIndex }}",
+          "questions": "={{ JSON.stringify($json.questions) }}",
+          "currentQuestionIndex": "0",
+          "score": "0",
+          "status": "in_progress"
+        }
+      },
+      "type": "n8n-nodes-base.n8nDb",
+      "typeVersion": 1,
+      "position": [
+        960,
+        600
+      ],
+      "id": "z5a6b7c8-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Create Quiz Session"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Send first question\nconst questions = $input.first().json.questions;\nconst currentQuestion = questions[0];\n\nconst keyboard = [\n  [{ text: currentQuestion.options.A, callback_data: `answer_0_A` }],\n  [{ text: currentQuestion.options.B, callback_data: `answer_0_B` }],\n  [{ text: currentQuestion.options.C, callback_data: `answer_0_C` }],\n  [{ text: currentQuestion.options.D, callback_data: `answer_0_D` }]\n];\n\nreturn [{\n  json: {\n    chatId: $input.first().json.chatId,\n    message: `Question 1 of ${questions.length}\\n\\n${currentQuestion.question}`,\n    keyboard: keyboard\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        600
+      ],
+      "id": "a6b7c8d9-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Send First Question"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/{bot_token}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"chat_id\": \"{{ $json.chatId }}\",\n  \"text\": \"{{ $json.message }}\",\n  \"reply_markup\": {\n    \"inline_keyboard\": {{ JSON.stringify($json.keyboard) }}\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1440,
+        600
+      ],
+      "id": "b7c8d9e0-9c8d-4e8a-9c1f-2d5e8f9a7b6c",
+      "name": "Send Question"
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Command Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Command Router": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Load Materials",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Load Selected Material",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract URL": {
+      "main": [
+        [
+          {
+            "node": "Fetch Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Article": {
+      "main": [
+        [
+          {
+            "node": "Clean Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Content": {
+      "main": [
+        [
+          {
+            "node": "AI Teacher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Teacher": {
+      "main": [
+        [
+          {
+            "node": "Save Material",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Material": {
+      "main": [
+        [
+          {
+            "node": "Send Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Materials": {
+      "main": [
+        [
+          {
+            "node": "Format Material List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Material List": {
+      "main": [
+        [
+          {
+            "node": "Send Material List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Selected Material": {
+      "main": [
+        [
+          {
+            "node": "AI Examiner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Examiner": {
+      "main": [
+        [
+          {
+            "node": "Create Quiz Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Quiz Session": {
+      "main": [
+        [
+          {
+            "node": "Send First Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send First Question": {
+      "main": [
+        [
+          {
+            "node": "Send Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "1"
+}
